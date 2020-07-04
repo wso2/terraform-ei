@@ -1,0 +1,2 @@
+[integrator]
+integrator_1 ansible_host=localhost ansible_user=wso2carbon ansible_connection=local

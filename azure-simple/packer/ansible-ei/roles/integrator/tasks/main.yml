@@ -1,0 +1,130 @@
+#----------------------------------------------------------------------------
+#  Copyright (c) 2020 WSO2, Inc. http://www.wso2.org
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#----------------------------------------------------------------------------
+---
+  - block:
+    # Set installation directory information
+    - name: Installation Information
+      set_fact:
+        product_dir: "{{ target }}/integrator"
+        carbon_home: "{{ target }}/integrator/{{ product_name }}-{{ product_version }}"
+        shared_dir: "{{ target }}/sharedfs"
+
+    - name: Generate the random number
+      set_fact:
+        random_number: "{{ (30) | random }}"
+      run_once: yes
+
+    - name: Wait for "{{ random_number }}"s before parallel execution
+      wait_for:
+        timeout: "{{ random_number }}"
+      delegate_to: localhost
+
+    # WSO2 Distribution
+    - name: Create product directory
+      file:
+        path: "{{ product_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Copy wso2ei-integrator service file
+      template:
+        src: wso2ei-integrator.service.j2
+        dest: /etc/systemd/system/wso2ei-integrator.service
+
+    - name: Stop wso2ei-integrator as a service
+      systemd:
+        name: wso2ei-integrator
+        state: stopped
+
+    - name: Remove existing setup
+      file:
+        path: "{{ carbon_home }}"
+        state: absent
+
+    - name: Unzip WSO2 Enterprise Integrator Package
+      unarchive:
+        src: "{{ product_package_location }}/packs/{{ product_name }}-{{ product_version }}.zip"
+        dest: "{{ product_dir }}"
+        mode: u=rw,g=r,o=r
+
+    - name: Copy JDBC Driver
+      copy:
+       src: "{{ product_package_location }}/lib/{{ jdbc_driver }}"
+       dest: "{{ carbon_home }}/lib"
+
+    - name: Create a sharedfs directory if it does not exist
+      file:
+        path: "{{ shared_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check if sharedfs directory exists
+      stat:
+        path: "{{ shared_dir }}/deployment"
+      register: sharedfs_dir
+
+    - name: Copy deployments to sharedfs directory
+      synchronize:
+        src: "{{ carbon_home }}/repository/deployment"
+        dest: "{{ shared_dir }}"
+      when: not sharedfs_dir.stat.exists
+
+    - name: Recursively remove deployment files carbon_home directory
+      file:
+        path: "{{ carbon_home }}/repository/deployment/server"
+        state: absent
+
+    - name: Create a symbolic link to sharedfs directory
+      file:
+        src: "{{ shared_dir }}/deployment/server"
+        dest: "{{ carbon_home }}/repository/deployment/server"
+        owner: "{{ wso2_user }}"
+        group: "{{ wso2_group }}"
+        mode: 0755
+        state: link
+
+    - name: Copy configuration templates
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop: "{{ config_files }}"
+
+    - name: Change the owner of WSO2 directory
+      file:
+        path: "{{ target }}"
+        state: directory
+        recurse: true
+        owner: "{{ wso2_user }}"
+        group: "{{ wso2_group }}"
+        mode: 0755
+
+    when: "(inventory_hostname in groups['integrator'])"
+    become: true
+    become_method: sudo
+    become_user: root
+
+# Enable customization by uncommenting the following and adding the changes to the custom.yml
+      # - import_tasks: custom.yml
+
+  - block:
+    - name: Start wso2ei-integrator as a service
+      systemd:
+        name: wso2ei-integrator
+        state: started
+        daemon_reload: yes
+
+    become: true
+    become_user: root
