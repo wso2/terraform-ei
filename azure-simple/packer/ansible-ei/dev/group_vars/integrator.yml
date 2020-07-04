@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 # ----------------------------------------------------------------------------
+
 # List of configuration file templates, and the paths they should be written to
 config_files:
   - { src: 'carbon-home/bin/integrator.sh.j2',
