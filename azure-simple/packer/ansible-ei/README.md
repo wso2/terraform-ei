@@ -69,6 +69,8 @@ This repository contains the Ansible scripts for installing and configuring WSO2
 └── site.yml
 ```
 
+Packs could be either copied to a local directory, or downloaded from a remote location.
+
 ## Packs to be Copied
 
 Copy the following files to `files/packs` directory.
@@ -77,8 +79,8 @@ Copy the following files to `files/packs` directory.
 
 Copy the following files to `files/lib` directory.
 
-1. [MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/5.1.html)
-2. [Amazon Coretto for Linux x64 JDK](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+1. [MySQL Connector/J (5.1.48)](https://dev.mysql.com/downloads/connector/j/5.1.html)
+2. [Amazon Coretto for Linux x64 JDK (amazon-corretto-8.242.08.1)](https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/downloads-list.html)
 
 ## Running WSO2 Enterprise Integrator Ansible scripts
 
@@ -113,7 +115,13 @@ Add the configurations to the `custom.yml`. A sample is given below.
   template:
     src: path/to/example/file/example.xml.j2
     dest: destination/example.xml.j2
-  when: "(inventory_hostname in groups['sp'])"
+  when: "(inventory_hostname in groups['integrator'])"
 ```
 
 Follow the steps mentioned under `docs` directory to customize/create new Ansible scripts and deploy the recommended patterns.
+
+## Performance Tuning
+
+System configurations can be changed through Ansible to optimize OS level performance. Performance tuning can be enabled by changing `enable_performance_tuning` in `dev/group_vars/is.yml` to `true`.
+
+System files that will be updated when performance tuning are enabled is available in `files/system`. Update the configuration values according to the requirements of your deployment.
