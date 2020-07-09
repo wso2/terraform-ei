@@ -99,4 +99,3 @@ wso2user_db_url: jdbc:mysql://CONNECTION_STRING:3306/shared_db
 wso2user_db_username: shared_user@wso2eidb
 wso2user_db_password: BEstr11ng_#12
 wso2user_db_driver: com.mysql.jdbc.Driver
-
