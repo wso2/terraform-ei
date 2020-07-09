@@ -1,7 +1,5 @@
-
 Included Packer configurations scripts to create the WSO2 Enterprise Integrator Azure machine image. Later this builds Packer image is been referred by the Terraform scripts for provision for Enterprise Integrator 2 node setup.
 Azure subscription details are included in "variables.json".
-
 
 Packer Directories and Files
 ----------------
@@ -20,4 +18,3 @@ Packer Directories and Files
     
 `Vagrantfile` - 
     contained relavant vagrant configurations for test the Ansible playbook changes in locally
-    

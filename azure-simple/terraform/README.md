@@ -11,4 +11,3 @@ Terraform Files
 
 `output.tf`
     included loab-balancer Public ip address to be needed to configure as host entry for access the APIM web console.
-
