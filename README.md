@@ -1,4 +1,4 @@
-#Terraform Resources for WSO2 Enterprise Integrator
+# Terraform Resources for WSO2 Enterprise Integrator
 
 ## Installation
 
